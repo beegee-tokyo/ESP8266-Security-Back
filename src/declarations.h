@@ -17,6 +17,10 @@ String OTA_HOST = "Sec-xxxxxxxx";
 /** IP address of this module */
 IPAddress ipAddr;
 
+/** Timer to collect light information from DHT11 sensor */
+Ticker getWeatherTimer;
+/** Timer for heart beat */
+Ticker heartBeatTimer;
 /** Timer to switch off the relay */
 Ticker relayOffTimer;
 /** Timer for alarm siren */
@@ -45,13 +49,6 @@ int onTime = 300;
 /** Bug capture trial year of last good NTP time received */
 int lastKnownYear = 0;
 
-/** Flag for boot status */
-boolean inSetup = true;
-/** String with reboot reason */
-String rebootReason = "unknown";
-/** String with last known reboot reason */
-String lastRebootReason = "unknown";
-
 /** Instance of the DHT sensor */
 DHTesp dht;
 /** Result of last temperature measurement */
@@ -65,10 +62,10 @@ bool otaRunning = false;
 bool debugOn = false;
 
 /** Flag for automatic activation/deactivation of alarm */
-boolean hasAutoActivation = false;
+boolean hasAutoActivation = true;
 /** Hour for automatic activation of alarm (24h format) */
-int autoActivOn = 22;
+int autoActivOn = 23;
 /** Hour for automatic deactivation of alarm (24h format) */
-int autoActivOff = 8;
+int autoActivOff = 7;
 
 #endif

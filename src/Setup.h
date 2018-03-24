@@ -15,16 +15,11 @@
 #include <TimeLib.h>
 #include <DHTesp.h>
 
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>
-
 /* Common private libraries */
-#include <ntp.h>
-#include <leds.h>
-#include <wifi.h>
-#include <wifiAPinfo.h>
-#include <spiffs.h>
+#include <ntpLib.h>
+#include <ledLib.h>
+#include <wifiLib.h>
+#include <spiffsLib.h>
 
 /* globals.h contains defines and global variables */
 #include "globals.h"

@@ -5,6 +5,7 @@ Parts used:
  - Relay for light    
  - Piezo alarm speaker taken from a window alarm system    
  - DHT11 temperature and humidity sensor    
+
 The alarm system is part of my home control system.    
 The alarm can be activated automatically by programmed on and off times or manually from a PC or Android tablet    
 The light activation at night can be activated by a command over TCP connection    

@@ -58,8 +58,8 @@ void pirTrigger() {
 void createStatus(JsonObject& root, boolean makeShort) {
 	// Create status
 	// structure is:
-	// {"device":DEVICE_ID,"al":0/1,"ao":0/1,"lo":0/1,"bo":0/1,"au":0/1,"an":1...24,"af":1...24,
-	//			"rs":-100...+100,"re":rebootReason,"te":-20...+40,"hu":0...100,"he":-20...+40,"bu":"Build version"}
+	// {"device":DEVICE_ID,"al":0/1,"ao":0/1,"lo":0/1,"au":0/1,"an":1...24,"af":1...24,
+	//			"rs":-100...+100,"te":-20...+40,"hu":0...100,"he":-20...+40,"bu":"Build version"}
 
 	root["de"] = DEVICE_ID;
 	if (hasDetection) {
@@ -89,17 +89,9 @@ void createStatus(JsonObject& root, boolean makeShort) {
 	root["he"] = dht.computeHeatIndex(tempValue, humidValue, false);
 
 	if (!makeShort) {
-		if (inSetup) {
-			root["bo"] = 1;
-		} else {
-			root["bo"] = 0;
-		}
-
-		root["rs"] = getRSSI();
+		root["rs"] = WiFi.RSSI();
 
 		root["bu"] = compileDate;
-
-		root["re"] = lastRebootReason;
 
 		root["dt"] = digitalClockDisplay();
 
@@ -163,35 +155,6 @@ bool writeStatus() {
 }
 
 /**
- * Write reboot reason to file
- *
- * @param message
- *			Reboot reason as string
- * @return <code>boolean</code>
- *			True if reboot reason was saved
- *			False if file error occured
- */
-bool writeRebootReason(String message) {
-	// Write current status to file
-	writeStatus();
-	// Now append reboot reason to file
-	// Open config file for writing.
-	/** Pointer to file */
-	File statusFile = SPIFFS.open("/status.txt", "a");
-	if (!statusFile)
-	{
-		if (debugOn) {
-			sendDebug("Failed to open status.txt for writing", OTA_HOST);
-		}
-		return false;
-	}
-	// Save reboot reason to file
-	statusFile.println(message);
-	statusFile.close();
-	return true;
-}
-
-/**
  * Reads current status from status.txt
  * global variables are updated from the content
  *
@@ -200,7 +163,7 @@ bool writeRebootReason(String message) {
  *			False if file error occured
  */
 bool readStatus() {
-	// open file for reading.
+	// open file for reading or create it if it doesn't exist.
 	/** Pointer to file */
 	File statusFile = SPIFFS.open("/status.txt", "r");
 	if (!statusFile)
@@ -234,14 +197,6 @@ bool readStatus() {
 		}
 	}
 
-	// If there is no second line: Reboot reason is missing.
-	if (pos != -1)
-	{
-		rebootReason = content.substring(pos + le);
-	} else {
-		rebootReason = "Not saved";
-	}
-
 	// Create current status as from file as JSON
 	/** Buffer for Json object */
 	DynamicJsonBuffer jsonBuffer;
@@ -258,8 +213,8 @@ bool readStatus() {
 		// Parsing fail
 		return false;
 	}
-	if (root.containsKey("ao")) { //if (root.containsKey("alarm_on")) {
-		if (root["ao"] == 0) { //if (root["alarm_on"] == 0) {
+	if (root.containsKey("ao")) {
+		if (root["ao"] == 0) {
 			alarmOn = false;
 		} else {
 			alarmOn = true;
@@ -267,8 +222,8 @@ bool readStatus() {
 	} else {
 		alarmOn = false;
 	}
-	if (root.containsKey("au")) { //if (root.containsKey("auto")) {
-		if (root["au"] == 0) { //if (root["auto"] == 0) {
+	if (root.containsKey("au")) {
+		if (root["au"] == 0) {
 			hasAutoActivation = false;
 		} else {
 			hasAutoActivation = true;
@@ -276,13 +231,13 @@ bool readStatus() {
 	} else {
 		hasAutoActivation = false;
 	}
-	if (root.containsKey("an")) { //if (root.containsKey("auto_on")) {
-		autoActivOn = root["an"]; //autoActivOn = root["auto_on"];
+	if (root.containsKey("an")) {
+		autoActivOn = root["an"];
 	} else {
 		autoActivOn = 22;
 	}
-	if (root.containsKey("af")) { //if (root.containsKey("auto_off")) {
-		autoActivOff = root["af"]; //autoActivOff = root["auto_off"];
+	if (root.containsKey("af")) {
+		autoActivOff = root["af"];
 	} else {
 		autoActivOff = 8;
 	}

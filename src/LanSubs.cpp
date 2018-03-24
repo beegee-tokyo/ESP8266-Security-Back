@@ -41,7 +41,6 @@ void sendAlarm(boolean makeShort) {
 		if (debugOn) {
 			sendDebug("UDP write multicast failed", OTA_HOST);
 		}
-		wmIsConnected = false;
 		return;
 	}
 	String broadCast;
@@ -74,7 +73,6 @@ void sendAlarm(boolean makeShort) {
  *		p	to switch on alarm sound (panic button function)
  *		i	to get detailed status information
  *		b	to switch on the lights for 5 minutes
- *		r	to reset saved WiFi configuration
  *		d	to enable TCP debug
  *		x to reset the device
  *		y=YYYY,MM,DD,HH,mm,ss to set time and date
@@ -214,15 +212,6 @@ void socketServer(WiFiClient tcpClient) {
 		}
 		writeStatus();
 		return;
-	// Delete saved WiFi configuration
-	} else if (req.substring(0, 1) == "r") {
-		sendDebug("Delete WiFi credentials and reset device", OTA_HOST);
-		wifiManager.resetSettings();
-		// Reset the ESP
-		delay(3000);
-		ESP.reset();
-		delay(5000);
-		return;
 		// Date/time received
 	} else if (req.substring(0, 2) == "y=") {
 		int nowYear = 0;
@@ -337,7 +326,6 @@ void triggerPic() {
 		Serial.println("connection to backyard camera " + String(ipCam1[0]) + "." + String(ipCam1[1]) + "." + String(ipCam1[2]) + "." + String(ipCam1[3]) + " failed");
 		tcpClient.stop();
 		comLedFlashStop();
-		// wmIsConnected = false;
 		return;
 	}
 

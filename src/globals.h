@@ -5,7 +5,6 @@
 /** Output to activate Relay */
 #define relayPort 5
 /** Output to loudspeaker or piezo */
-// #define speakerPin 15
 #define speakerPin 12
 /** Definition of data pin for DHT sensor */
 #define DHTPIN 14
@@ -23,9 +22,11 @@ extern IPAddress ipAddr;
 extern const char compileDate [];
 /** WiFiServer class to create TCP socket server on port tcpComPort */
 extern WiFiServer tcpServer;
-/** IP address of this module */
-extern IPAddress ipAddr;
 
+/** Timer to collect light information from DHT11 sensor */
+extern Ticker getWeatherTimer;
+/** Timer for heart beat */
+extern Ticker heartBeatTimer;
 /** Timer to switch off the relay */
 extern Ticker relayOffTimer;
 /** Timer for alarm siren */
@@ -41,8 +42,6 @@ extern boolean panicOn;
 extern bool debugOn;
 /** Relay on delay time in seconds */
 extern int onTime;
-/** Flag for WiFi connection */
-extern bool wmIsConnected;
 /** Bug capture trial year of last good NTP time received */
 extern int lastKnownYear;
 
@@ -57,15 +56,8 @@ extern boolean hasDetection;
 /** Flag for light switched off */
 extern boolean lightOffTriggered;
 
-/** Flag for boot status */
-extern boolean inSetup;
-/** String with reboot reason */
-extern String rebootReason;
-/** String with last known reboot reason */
-extern String lastRebootReason;
-
 /** Instance of the DHT sensor */
-extern DHTesp dht; // 11 works fine for ESP8266
+extern DHTesp dht;
 /** Result of last temperature measurement */
 extern float tempValue;
 /** Result of last humidity measurement */

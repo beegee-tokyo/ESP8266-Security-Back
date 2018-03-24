@@ -20,7 +20,6 @@ void relayOff();
 // Device status functions
 void createStatus(JsonObject& root, boolean makeShort);
 bool writeStatus();
-bool writeRebootReason(String message);
 bool readStatus();
 
 // Communication functions
@@ -29,4 +28,5 @@ void socketServer(WiFiClient tcpClient);
 void triggerPic();
 void triggerVid(int cameraNum);
 void triggerLights();
+void initOTA();
 #endif
