@@ -29,4 +29,5 @@ void triggerPic();
 void triggerVid(int cameraNum);
 void triggerLights();
 void initOTA();
+void requestLightStatus();
 #endif

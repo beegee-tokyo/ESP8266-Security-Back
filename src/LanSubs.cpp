@@ -3,6 +3,9 @@
 /** Local name of server */
 static const char* host = "secb";
 
+/** Flag if it necessary to save changed status */
+bool needStatusSave = false;
+
 /**
  * Send broadcast message over UDP into local network
  *
@@ -106,7 +109,6 @@ void socketServer(WiFiClient tcpClient) {
 	req[index] = 0;
 
 	tcpClient.flush();
-	tcpClient.print(DEVICE_ID);
 	tcpClient.stop();
 	if (req.length() < 1) { // No data received
 		if (debugOn) {
@@ -124,9 +126,11 @@ void socketServer(WiFiClient tcpClient) {
 		if (req.substring(2, 3) == "0") { // Alarm off
 			alarmOn = false;
 			actLedFlashStop();
+			needStatusSave = true;
 		} else if (req.substring(2, 3) == "1") { // Alarm on
 			alarmOn = true;
 			actLedFlashStart(1);
+			needStatusSave = true;
 		} else if (req.substring(2, 3) == "2") { // Alarm auto
 			if (req.substring(3, 4) == ","
 					&& req.substring(6, 7) == ",") {
@@ -149,20 +153,23 @@ void socketServer(WiFiClient tcpClient) {
 					autoActivOff = 8;
 				}
 				hasAutoActivation = true;
-				writeStatus();
+				needStatusSave = true;
 			}
 		} else if (req.substring(2, 3) == "3") { // Alarm auto off
 			hasAutoActivation = false;
+			needStatusSave = true;
 		} else if (req.substring(2, 3) == "4") { // Auto lights on
 			if (switchLights) {
 				 return; // Auto lights already on, nothing to do
-			 }
+			}
 			switchLights = true;
+			needStatusSave = true;
 		} else if (req.substring(2, 3) == "5") { // Auto lights off
 			if (!switchLights) {
 				 return; // Auto lights already off, nothing to do
 			 }
 			switchLights = false;
+			needStatusSave = true;
 		}
 		// Send back status over UDP
 		sendAlarm(true);
@@ -210,7 +217,7 @@ void socketServer(WiFiClient tcpClient) {
 		} else {
 			sendDebug("Debug over TCP is off", OTA_HOST);
 		}
-		writeStatus();
+		needStatusSave = true;
 		return;
 		// Date/time received
 	} else if (req.substring(0, 2) == "y=") {
@@ -305,6 +312,10 @@ void socketServer(WiFiClient tcpClient) {
 		ESP.reset();
 		delay(5000);
 	}
+	// Check if it necessary to save new status
+	if (needStatusSave) {
+		writeStatus();
+	}
 }
 
 void triggerPic() {
@@ -385,6 +396,35 @@ void triggerLights() {
 	}
 
 	tcpClient.print("b");
+
+	tcpClient.flush();
+	tcpClient.stop();
+	comLedFlashStop();
+}
+
+void requestLightStatus() {
+	if (secIp[0] == 0) { // If 0, no secIp was stored
+		if (debugOn) {
+			sendDebug("requestLightStatus - no security IP found", OTA_HOST);
+		}
+		return;
+	}
+	comLedFlashStart(0.1);
+	/** WiFiClient class to create TCP communication */
+	WiFiClient tcpClient;
+
+	if (debugOn) {
+		sendDebug("triggerLights", OTA_HOST);
+	}
+
+	if (!tcpClient.connect(secIp, tcpComPort)) {
+		Serial.println("connection to frontyard security lights " + String(secIp[0]) + "." + String(secIp[1]) + "." + String(secIp[2]) + "." + String(secIp[3]) + " failed");
+		tcpClient.stop();
+		comLedFlashStop();
+		return;
+	}
+
+	tcpClient.print("a=6");
 
 	tcpClient.flush();
 	tcpClient.stop();
